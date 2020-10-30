@@ -1,0 +1,36 @@
+void setup(){
+  size(500, 500);
+}
+
+int x = 250; 
+double y = 250;
+
+int xSpeed = 3;
+double ySpeed = 0;
+
+double accel = -.1;
+double time = 0;
+
+int mass = 10;
+double fgravity = mass * accel;
+
+void draw(){
+  background(54, 50, 50);
+  
+  time += .1;
+  //y = 250 - (.5*accel*Math.pow(time, 2));
+  
+  ySpeed = accel*(time);
+  y -= ySpeed;
+  
+  System.out.println(ySpeed);
+  
+  if(x > width - 25 || x < 25){
+    xSpeed *= -1;
+  }
+  if(y > width -25 || y < 25){
+    accel *= -1;
+  }
+  fill(214, 24, 24);
+  ellipse((int)x, (int)y, 50, 50);
+}
