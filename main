@@ -2,7 +2,7 @@ void setup(){
   size(500, 500);
 }
 
-Ball ball = new Ball(50);
+Ball ball = new Ball(250,250,50,10);
 
 void draw(){
   background(54, 50, 50);
@@ -14,6 +14,7 @@ void draw(){
   ellipse(ball.x, ball.y, ball.radius, ball.radius);
     
 }
+
 void mousePressed(){
   ball.initialPos();
 }
@@ -24,23 +25,40 @@ void mouseReleased(){
 class Ball{
   
   int radius;
+  int mass;
   
-  int x = 250; 
-  int y = 250;
+  int x;
+  int y;
   
-  int xVelocity = 0;
-  int yVelocity = 0;
+  float xVelocity;
+  float yVelocity;
   
-  int xAcceleration = 0;
-  int yAcceleration = 0;
+  float xAccel;
+  float yAccel;
   
-  int xMouseInitial=0,yMouseInitial=0;
+  int xMouseInitial,yMouseInitial;
   int initialTime;
   
-  boolean pressed=false;
+  boolean pressed;
   
-  public Ball(int r){
+  float xInitialForce;
+  float yInitialForce;
+  float gravityForce;
+  
+  float netYForce;
+  float netXForce;
+  
+  public Ball(int x, int y,int r, int m){
+    this.x=x;
+    this.y=y;
     radius = r;
+    mass=m;
+    xVelocity=0;
+    yVelocity=0;
+    xAccel=0;
+    yAccel=0;
+    pressed=false;
+    gravityForce=mass*9.8;
   }
   
   void initialPos(){
@@ -53,11 +71,19 @@ class Ball{
   }
   
   void applyInitialForce(){
-    int xChange = mouseX-xMouseInitial;
-    int yChange = mouseY-yMouseInitial;
+    float xChange = mouseX-xMouseInitial;
+    float yChange = mouseY-yMouseInitial;
     int timeChange=frameCount-initialTime;
     xVelocity=xChange/timeChange;
     yVelocity=yChange/timeChange;
+    
+    xAccel=xVelocity/(frameCount-initialTime);
+    yAccel=yVelocity/(frameCount-initialTime);
+    System.out.println(xAccel+" "+yAccel);
+    
+    xInitialForce=xAccel*mass;
+    yInitialForce=yAccel*mass;
+    System.out.println(xInitialForce+" "+yInitialForce);
   }
   
   void changePos(){
