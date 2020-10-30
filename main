@@ -1,0 +1,74 @@
+void setup(){
+  size(500, 500);
+}
+
+Ball ball = new Ball(50);
+
+void draw(){
+  background(54, 50, 50);
+
+  ball.changePos();
+
+  
+  fill(214, 24, 24);
+  ellipse(ball.x, ball.y, ball.radius, ball.radius);
+    
+}
+void mousePressed(){
+  ball.initialPos();
+}
+void mouseReleased(){
+  ball.applyForce();
+}
+
+class Ball{
+  
+  int radius;
+  
+  int x = 250; 
+  int y = 250;
+  
+  int xVelocity = 0;
+  int yVelocity = 0;
+  
+  int xAcceleration = 0;
+  int yAcceleration = 0;
+  
+  int xMouseInitial=0,yMouseInitial=0;
+  int initialTime;
+  
+  boolean pressed=false;
+  
+  public Ball(int r){
+    radius = r;
+  }
+  
+  void initialPos(){
+    if(!pressed){
+      initialTime = frameCount;
+      xMouseInitial=mouseX;
+      yMouseInitial=mouseY;
+      pressed = true;
+    }
+  }
+  
+  void applyForce(){
+    int xChange = mouseX-xMouseInitial;
+    int yChange = mouseY-yMouseInitial;
+    int timeChange=frameCount-initialTime;
+    xVelocity=xChange/timeChange;
+    yVelocity=yChange/timeChange;
+  }
+  
+  void changePos(){
+    x += xVelocity;
+    y += yVelocity;
+    
+    if(x > width-radius/2 || x < radius/2){
+      xVelocity *= -1;
+    }
+    if(y > height-radius/2 || y < radius/2){
+      yVelocity *= -1;
+    }
+  }
+}
