@@ -11,7 +11,7 @@ void draw(){
 
   
   fill(214, 24, 24);
-  ellipse(ball.x, ball.y, ball.radius, ball.radius);
+  ellipse((float)ball.x, (float)ball.y, ball.radius, ball.radius);
     
 }
 
@@ -26,26 +26,26 @@ class Ball{
   int radius;
   int mass;
   
-  float x;
-  float y;
+  double x;
+  double y;
   
-  float xVelocity;
-  float yVelocity;
+  double xVelocity;
+  double yVelocity;
   
-  float xAccel;
-  float yAccel;
+  double xAccel;
+  double yAccel;
   
   int xMouseInitial,yMouseInitial;
   int initialTime;
   
-  boolean pressed;
+  boolean pressedBefore;
   
-  float xInitialForce;
-  float yInitialForce;
-  float gravityForce;
+  double xInitialForce;
+  double yInitialForce;
+  double gravityForce;
   
-  float netYForce;
-  float netXForce;
+  double netYForce;
+  double netXForce;
   
   public Ball(int x, int y,int r, int m){
     this.x=x;
@@ -56,22 +56,22 @@ class Ball{
     yVelocity=0;
     xAccel=0;
     yAccel=0;
-    pressed=false;
+    pressedBefore=false;
     gravityForce=mass*9.8;
   }
   
   void initialPos(){
-    if(!pressed){
+    if(!pressedBefore){
       initialTime = frameCount;
       xMouseInitial=mouseX;
       yMouseInitial=mouseY;
-      pressed = true;
+      pressedBefore = true;  //TODO fix resling
     }
   }
   
   void applyInitialForce(){
-    float xChange = mouseX-xMouseInitial;
-    float yChange = mouseY-yMouseInitial;
+    double xChange = mouseX-xMouseInitial;
+    double yChange = mouseY-yMouseInitial;
     int timeChange=frameCount-initialTime;
     xVelocity=xChange/timeChange;
     yVelocity=yChange/timeChange;
