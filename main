@@ -23,12 +23,11 @@ void mouseReleased(){
 }
 
 class Ball{
-  
   int radius;
   int mass;
   
-  int x;
-  int y;
+  float x;
+  float y;
   
   float xVelocity;
   float yVelocity;
