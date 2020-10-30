@@ -18,7 +18,7 @@ void mousePressed(){
   ball.initialPos();
 }
 void mouseReleased(){
-  ball.applyForce();
+  ball.applyInitialForce();
 }
 
 class Ball{
@@ -52,7 +52,7 @@ class Ball{
     }
   }
   
-  void applyForce(){
+  void applyInitialForce(){
     int xChange = mouseX-xMouseInitial;
     int yChange = mouseY-yMouseInitial;
     int timeChange=frameCount-initialTime;
