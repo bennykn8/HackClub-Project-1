@@ -29,8 +29,8 @@ class Ball{
   double x;
   double y;
   
-  double xVelocity;
-  double yVelocity;
+  int xVelocity;
+  int yVelocity;
   
   double xAccel;
   double yAccel;
@@ -58,6 +58,9 @@ class Ball{
     yAccel=0;
     pressedBefore=false;
     gravityForce=mass*9.8;
+
+    netXForce=xInitialForce;
+    netYForce=yInitialForce;//TODO fricking gravity man
   }
   
   void initialPos(){
@@ -73,11 +76,11 @@ class Ball{
     double xChange = mouseX-xMouseInitial;
     double yChange = mouseY-yMouseInitial;
     int timeChange=frameCount-initialTime;
-    xVelocity=xChange/timeChange;
-    yVelocity=yChange/timeChange;
+    xVelocity=(int)xChange/timeChange;
+    yVelocity=(int)yChange/timeChange;
     
     xAccel=xVelocity/timeChange;
-    yAccel=yVelocity/timeChange;
+    yAccel=9.81;
     System.out.println(xAccel+" "+yAccel);
     
     xInitialForce=xAccel*mass;
@@ -87,13 +90,20 @@ class Ball{
   }
   
   void changePos(){
+    
+    yVelocity+=yAccel;
+    
     x+=calculateVelocity(netXForce,xVelocity);
     y+=calculateVelocity(netYForce,yVelocity);
     
     if(x > width-radius/2 || x < radius/2){
+      if(x>width-radius/2) x=width-radius/2;
+      else x=radius/2;
       xVelocity *= -1;
     }
     if(y > height-radius/2 || y < radius/2){ //TODO fix out of bound bug with fast velocities
+      if(y > height-radius/2) y = height-radius/2;
+      else y = radius/2;
       yVelocity *= -1;
     }
   }
