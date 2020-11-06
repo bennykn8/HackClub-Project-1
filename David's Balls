@@ -1,0 +1,73 @@
+PhysBall[] a = new PhysBall[10];
+void setup() 
+{
+  size(500, 500);
+  for(int i = 0; i < a.length; i++) {
+    //a[i]= new PhysBall(new Coord((float)Math.random()*500, (float)Math.random()*10-5, (float)Math.random()*0.01), new Coord((float)Math.random()*500, (float)Math.random()*10-5, (float)Math.random()*0.01), (float)Math.random()*50+10);
+    a[i]= new PhysBall(new Coord((float)Math.random()*500, (float)Math.random()*10-5, 0), new Coord((float)Math.random()*500, (float)Math.random()*10-5, 0.5), 5);
+  }
+}
+
+void draw() { 
+  background(204);
+  for(int i = 0; i < a.length; i++) {
+    ellipse(a[i].xCoord().getPos(), a[i].yCoord().getPos(), a[i].getSize()*2, a[i].getSize()*2);
+    a[i].update();
+  }
+} 
+
+class PhysBall {
+  private Coord x, y;
+  private float size;
+  public PhysBall(Coord xin, Coord yin, float s) {
+    x = xin;
+    y = yin;
+    size = s;
+  }
+  public void update() {
+    x.increment(500-size, size);
+    y.increment(500-size, size);
+  }
+  public Coord xCoord() {
+   return x; 
+  }
+  public Coord yCoord() {
+   return y; 
+  }
+  public float getSize() {
+    return size;
+  }
+}
+class Coord {
+  private float pos, spd, accel;
+  public Coord(float p) {
+   pos = p;
+   spd = 0;
+   accel = 0;
+  }
+  public Coord(float p, float s, float a) {
+    pos = p;
+    spd = s;
+    accel = a;
+  }
+  public void increment(float big, float small) {
+   
+    if(pos>big) {
+      spd = Math.abs(spd)*0.5*-1;
+      pos = big;
+      if(spd>-0.3) spd = 0;
+    }
+    
+    if(pos<small) {
+      spd = Math.abs(spd)*0.5;
+      pos = small;
+      if(spd<0.3) spd = 0;
+      
+    }
+    spd += accel;
+    pos += spd-accel/2;
+  }
+  public float getPos() {
+    return pos;
+  }
+}
