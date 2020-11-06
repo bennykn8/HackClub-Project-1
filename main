@@ -16,22 +16,25 @@ void draw(){
   ellipse((float)ball.x, (float)ball.y, ball.diameter, ball.diameter);
     
 }
-
+void mouseDragged(){
+  if(mouseButton==RIGHT&&(Math.abs(mouseX-ball.x)<50&&Math.abs(mouseY-ball.y)<50)){
+    ball.x=mouseX;
+    ball.y=mouseY;
+    ball.reset();
+  }
+}
 void mousePressed(){
-  ball.initialPos();
+  if(mouseButton==LEFT)ball.initialPos();
 }
 void mouseReleased(){
-  ball.applyInitialForce();
+  if(mouseButton==LEFT)ball.applyInitialForce();
+  else ball.yAccel=gravAccel;
 }
 void keyPressed(){
   if(key==' '){
-    System.out.println("X:"+ball.x+" Y:"+ball.y);
+    System.out.println("\nX:"+ball.x+" Y:"+ball.y);
     System.out.println("Vx:"+ball.xVelocity+" Vy:"+ball.yVelocity);
     System.out.println("Ax:"+ball.xAccel+" Ay:"+ball.yAccel);
-  }
-  if(key==SHIFT&&mousePressed){
-    ball.x=mouseX;
-    ball.y=mouseY;
   }
   
 }
@@ -129,5 +132,11 @@ class Ball{
   double calculateVelocity(double f,double v){
     double accel = f/mass;
     return v+accel;
+  }
+  void reset(){
+    xVelocity=0;
+    yVelocity=0;
+    xAccel=0;
+    yAccel=0;
   }
 }
