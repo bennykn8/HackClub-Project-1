@@ -2,9 +2,9 @@ void setup(){
   size(1000,1000);
 }
 
-Ball ball = new Ball(500,500,50,10);
+Ball ball = new Ball(500,500,50,10,0.75);
 double gravAccel=9.81;
-double frictionAccel=2;
+double frictionAccel=0.75;
 
 void draw(){
   background(54, 50, 50);
@@ -23,7 +23,18 @@ void mousePressed(){
 void mouseReleased(){
   ball.applyInitialForce();
 }
-
+void keyPressed(){
+  if(key==' '){
+    System.out.println("X:"+ball.x+" Y:"+ball.y);
+    System.out.println("Vx:"+ball.xVelocity+" Vy:"+ball.yVelocity);
+    System.out.println("Ax:"+ball.xAccel+" Ay:"+ball.yAccel);
+  }
+  if(key==SHIFT&&mousePressed){
+    ball.x=mouseX;
+    ball.y=mouseY;
+  }
+  
+}
 class Ball{
   int diameter;
   int mass;
@@ -31,8 +42,8 @@ class Ball{
   double x;
   double y;
   
-  int xVelocity;
-  int yVelocity;
+  double xVelocity;
+  double yVelocity;
   
   double xAccel;
   double yAccel;
@@ -48,11 +59,14 @@ class Ball{
   double netYForce;
   double netXForce;
   
-  Ball(int x, int y,int r, int m){
+  double elasticity;
+  Ball(int x, int y,int r, int m,double e){
     this.x=x;
     this.y=y;
     diameter = r;
     mass=m;
+    elasticity = e;
+    
     xVelocity=0;
     yVelocity=0;
     xAccel=0;
@@ -100,14 +114,14 @@ class Ball{
     if(x > width-diameter/2 || x < diameter/2){
       if(x>width-diameter/2) x=width-diameter/2;
       else x=diameter/2;
-      xVelocity *= -1;
+      xVelocity *= -1*elasticity;
     }
     if(y > height-diameter/2 || y < diameter/2){ //TODO fix out of bound bug with fast velocities
       if(y > height-diameter/2) y = height-diameter/2;
       else y = diameter/2;
-      yVelocity *= -1;
+      yVelocity *= -1*elasticity;
     }
-    if(y==diameter/2&&xVelocity!=0) {
+    if(y==height-diameter/2&&xVelocity!=0) {
         xAccel=xVelocity>0?-frictionAccel:frictionAccel;
     }
     else xAccel=0;
