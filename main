@@ -3,6 +3,8 @@ void setup(){
 }
 
 Ball ball = new Ball(500,500,50,10);
+double gravAccel=9.81;
+double frictionAccel=2;
 
 void draw(){
   background(54, 50, 50);
@@ -11,7 +13,7 @@ void draw(){
 
   
   fill(214, 24, 24);
-  ellipse((float)ball.x, (float)ball.y, ball.radius, ball.radius);
+  ellipse((float)ball.x, (float)ball.y, ball.diameter, ball.diameter);
     
 }
 
@@ -23,7 +25,7 @@ void mouseReleased(){
 }
 
 class Ball{
-  int radius;
+  int diameter;
   int mass;
   
   double x;
@@ -42,23 +44,21 @@ class Ball{
   
   double xInitialForce;
   double yInitialForce;
-  double gravityForce;//TODO apply gravity
-  
+
   double netYForce;
   double netXForce;
   
   Ball(int x, int y,int r, int m){
     this.x=x;
     this.y=y;
-    radius = r;
+    diameter = r;
     mass=m;
     xVelocity=0;
     yVelocity=0;
     xAccel=0;
     yAccel=0;
     pressedBefore=false;
-    gravityForce=mass*9.8;
-
+    
     netXForce=xInitialForce;
     netYForce=yInitialForce;//TODO fricking gravity man
   }
@@ -80,7 +80,7 @@ class Ball{
     yVelocity=(int)yChange/timeChange;
     
     xAccel=xVelocity/timeChange;
-    yAccel=9.81;
+    yAccel=gravAccel;
     System.out.println(xAccel+" "+yAccel);
     
     xInitialForce=xAccel*mass;
@@ -92,20 +92,25 @@ class Ball{
   void changePos(){
     
     yVelocity+=yAccel;
+    xVelocity+=xAccel;
     
     x+=calculateVelocity(netXForce,xVelocity);
     y+=calculateVelocity(netYForce,yVelocity);
     
-    if(x > width-radius/2 || x < radius/2){
-      if(x>width-radius/2) x=width-radius/2;
-      else x=radius/2;
+    if(x > width-diameter/2 || x < diameter/2){
+      if(x>width-diameter/2) x=width-diameter/2;
+      else x=diameter/2;
       xVelocity *= -1;
     }
-    if(y > height-radius/2 || y < radius/2){ //TODO fix out of bound bug with fast velocities
-      if(y > height-radius/2) y = height-radius/2;
-      else y = radius/2;
+    if(y > height-diameter/2 || y < diameter/2){ //TODO fix out of bound bug with fast velocities
+      if(y > height-diameter/2) y = height-diameter/2;
+      else y = diameter/2;
       yVelocity *= -1;
     }
+    if(y==diameter/2&&xVelocity!=0) {
+        xAccel=xVelocity>0?-frictionAccel:frictionAccel;
+    }
+    else xAccel=0;
   }
   double calculateVelocity(double f,double v){
     double accel = f/mass;
