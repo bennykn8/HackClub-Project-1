@@ -1,0 +1,145 @@
+PhysBall[] a = new PhysBall[10];
+void setup() 
+{
+  size(500, 500);
+  for(int i = 0; i < a.length; i++) {
+    //a[i]= new PhysBall(new Coord((float)Math.random()*500, (float)Math.random()*10-5, (float)Math.random()*0.01), new Coord((float)Math.random()*500, (float)Math.random()*10-5, (float)Math.random()*0.01), (float)Math.random()*50+10);
+    a[i]= new PhysBall(new Coord((float)Math.random()*500, (float)Math.random()*10-5, 0), new Coord((float)Math.random()*500, (float)Math.random()*10-5, 0), 40);
+  }
+  //a[0] = new PhysBall(new Coord(400, -0.5, 0), new Coord(300, 0, 0), 40);
+  //a[1] = new PhysBall(new Coord(100, 0.5, 0), new Coord(300, 0, 0), 40); 
+}
+
+void draw() { 
+  background(204);
+  for(int i = 0; i < a.length; i++) { //Collision w/ other balls checks for all balls
+    for(int j = i+1; j < a.length; j++) {//Updates both balls; only does each pair of balls once.
+      TwoVector distance = new TwoVector(a[j].xCoord().getPos()-a[i].xCoord().getPos(), a[j].yCoord().getPos()-a[i].yCoord().getPos());
+      if(distance.magnitude()<a[j].getSize()*2) {
+        TwoVector inForceDirectionI = TwoVector.scalarMultiple(TwoVector.dot(distance, a[i].spdDir()) / distance.magnitude() / distance.magnitude(), distance);
+        TwoVector perpendicularI = TwoVector.add(a[i].spdDir(), TwoVector.scalarMultiple(-1, inForceDirectionI));
+        TwoVector inForceDirectionJ = TwoVector.scalarMultiple(TwoVector.dot(distance, a[j].spdDir()) / distance.magnitude() / distance.magnitude(), distance);
+        TwoVector perpendicularJ = TwoVector.add(a[j].spdDir(), TwoVector.scalarMultiple(-1, inForceDirectionJ));
+        
+        a[i].setSpdDir(TwoVector.add(inForceDirectionJ, perpendicularI));
+        a[j].setSpdDir(TwoVector.add(inForceDirectionI, perpendicularJ));
+        
+        //Making sure the balls are not intersecting at the end; snaps the balls out. I'd like to make this shorter.
+        TwoVector iChange = TwoVector.scalarMultiple((distance.magnitude()/2 - a[j].getSize()) / distance.magnitude(), distance);
+        TwoVector jChange = TwoVector.scalarMultiple((a[j].getSize() - distance.magnitude()/2) / distance.magnitude(), distance);
+        a[i].xCoord().setPos(a[i].xCoord().getPos()+iChange.one());
+        a[i].yCoord().setPos(a[i].yCoord().getPos()+iChange.two());
+        a[j].xCoord().setPos(a[j].xCoord().getPos()+jChange.one());
+        a[j].yCoord().setPos(a[j].yCoord().getPos()+jChange.two());
+      }
+    }
+  }
+  for(int i = 0; i < a.length; i++) {
+    a[i].update();
+    ellipse(a[i].xCoord().getPos(), a[i].yCoord().getPos(), a[i].getSize()*2, a[i].getSize()*2);
+  }
+} 
+
+class PhysBall {
+  private Coord x, y;
+  private float size;
+  public PhysBall(Coord xin, Coord yin, float s) {
+    x = xin;
+    y = yin;
+    size = s;
+  }
+  public void update() {
+    x.increment(500-size, size);
+    y.increment(500-size, size);
+  }
+  public Coord xCoord() {
+   return x; 
+  }
+  public Coord yCoord() {
+   return y; 
+  }
+  public TwoVector spdDir() {
+    return new TwoVector(x.getSpd(), y.getSpd());
+  }
+  public float getSize() {
+    return size;
+  }
+  public void setSpdDir(TwoVector a) {
+    x.setSpd(a.one());
+    y.setSpd(a.two());
+  }
+}
+
+
+class Coord {
+  private float pos, spd, accel;
+  public Coord(float p) {
+   pos = p;
+   spd = 0;
+   accel = 0;
+  }
+  public Coord(float p, float s, float a) {
+    pos = p;
+    spd = s;
+    accel = a;
+  }
+  public void increment(float big, float small) {
+   
+    if(pos>big) {
+      spd = Math.abs(spd)*1*-1;
+      pos = big;
+      if(spd>-1.0) spd = 0;
+    }
+    
+    if(pos<small) {
+      spd = Math.abs(spd)*1;
+      pos = small;
+      if(spd<1.0) spd = 0;
+      
+    }
+    
+    
+    
+    spd += accel;
+    pos += spd-accel/2;
+  }
+  public void setSpd(float s) {
+    spd = s;
+  }
+  public void setPos(float p) {
+    pos = p;
+  }
+  public float getPos() {
+    return pos;
+  }
+  public float getSpd() {
+    return spd;
+  }
+}
+
+
+static class TwoVector {
+  float one, two;
+  public TwoVector(float o, float t) {
+    one = o;
+    two = t;
+  }
+  public float one() {
+    return one;
+  }
+  public float two() {
+    return two;
+  }
+  public float magnitude() {
+    return (float)Math.sqrt(Math.pow(one, 2)+Math.pow(two, 2));
+  }
+  public static TwoVector add(TwoVector a, TwoVector b) {
+    return new TwoVector(a.one + b.one, a.two + b.two);
+  }
+  public static float dot(TwoVector a, TwoVector b) {
+    return a.one*b.one+a.two*b.two;
+  }
+  public static TwoVector scalarMultiple(float s, TwoVector a) {
+    return new TwoVector(s*a.one(), s*a.two());
+  }
+}
