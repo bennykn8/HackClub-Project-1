@@ -1,46 +1,49 @@
-PhysBall[] a = new PhysBall[10];
+PhysBall[] a = new PhysBall[20];
+Line[] lines = new Line[6];
 void setup() 
 {
   size(500, 500);
   for(int i = 0; i < a.length; i++) {
     //a[i]= new PhysBall(new Coord((float)Math.random()*500, (float)Math.random()*10-5, (float)Math.random()*0.01), new Coord((float)Math.random()*500, (float)Math.random()*10-5, (float)Math.random()*0.01), (float)Math.random()*50+10);
-    a[i]= new PhysBall(new Coord((float)Math.random()*500, (float)Math.random()*10-5, 0), new Coord((float)Math.random()*500, (float)Math.random()*10-5, 0), 40);
+    a[i]= new PhysBall(new Coord((float)Math.random()*500, (float)Math.random()*10-5, 0.25), new Coord((float)Math.random()*500, (float)Math.random()*10-5, 0.1), 30);
   }
-  //a[0] = new PhysBall(new Coord(400, -0.5, 0), new Coord(300, 0, 0), 40);
-  //a[1] = new PhysBall(new Coord(100, 0.5, 0), new Coord(300, 0, 0), 40); 
+  //borders
+  lines[0] = new Line(0, 0, 500, 0, 0);
+  lines[1] = new Line(0, 500, 500, 500, 0);
+  lines[2] = new Line(0, 0, 0, 500, 0);
+  lines[3] = new Line(500, 0, 500, 500, 0);
+  //additional lines
+  lines[4] = new Line(500, 500, 0, 0, 0);
+  lines[5] = new Line(0, 500, 500, 0, 0);
 }
 
 void draw() { 
   background(204);
-  for(int i = 0; i < a.length; i++) { //Collision w/ other balls checks for all balls
-    for(int j = i+1; j < a.length; j++) {//Updates both balls; only does each pair of balls once.
-      TwoVector distance = new TwoVector(a[j].xCoord().getPos()-a[i].xCoord().getPos(), a[j].yCoord().getPos()-a[i].yCoord().getPos());
-      if(distance.magnitude()<a[j].getSize()*2) {
-        TwoVector inForceDirectionI = TwoVector.scalarMultiple(TwoVector.dot(distance, a[i].spdDir()) / distance.magnitude() / distance.magnitude(), distance);
-        TwoVector perpendicularI = TwoVector.add(a[i].spdDir(), TwoVector.scalarMultiple(-1, inForceDirectionI));
-        TwoVector inForceDirectionJ = TwoVector.scalarMultiple(TwoVector.dot(distance, a[j].spdDir()) / distance.magnitude() / distance.magnitude(), distance);
-        TwoVector perpendicularJ = TwoVector.add(a[j].spdDir(), TwoVector.scalarMultiple(-1, inForceDirectionJ));
-        
-        a[i].setSpdDir(TwoVector.add(inForceDirectionJ, perpendicularI));
-        a[j].setSpdDir(TwoVector.add(inForceDirectionI, perpendicularJ));
-        
-        //Making sure the balls are not intersecting at the end; snaps the balls out. I'd like to make this shorter.
-        TwoVector iChange = TwoVector.scalarMultiple((distance.magnitude()/2 - a[j].getSize()) / distance.magnitude(), distance);
-        TwoVector jChange = TwoVector.scalarMultiple((a[j].getSize() - distance.magnitude()/2) / distance.magnitude(), distance);
-        a[i].xCoord().setPos(a[i].xCoord().getPos()+iChange.one());
-        a[i].yCoord().setPos(a[i].yCoord().getPos()+iChange.two());
-        a[j].xCoord().setPos(a[j].xCoord().getPos()+jChange.one());
-        a[j].yCoord().setPos(a[j].yCoord().getPos()+jChange.two());
-      }
-    }
-  }
   for(int i = 0; i < a.length; i++) {
     a[i].update();
+  }
+  for(PhysBall test : a) {
+    for(Line line : lines) {
+      test.checkWallCollisions(line);
+    }
+  }
+  for(Line line : lines) {
+    line(line.getStartx()-line.getWidth()*(float)Math.sin(line.getAngle()), line.getStarty()+line.getWidth()*(float)Math.cos(line.getAngle()), line.getEndx()-line.getWidth()*(float)Math.sin(line.getAngle()), line.getEndy()+line.getWidth()*(float)Math.cos(line.getAngle()));
+    line(line.getStartx()+line.getWidth()*(float)Math.sin(line.getAngle()), line.getStarty()-line.getWidth()*(float)Math.cos(line.getAngle()), line.getEndx()+line.getWidth()*(float)Math.sin(line.getAngle()), line.getEndy()-line.getWidth()*(float)Math.cos(line.getAngle()));
+  }
+  for(int i = 0; i < a.length; i++) { //Collision w/ other balls checks for all balls
+    for(int j = i+1; j < a.length; j++) {//Updates both balls; only does each pair of balls once.
+      PhysBall.checkBallCollisions(a[i], a[j]);
+    }
+  }
+  
+  for(int i = 0; i < a.length; i++) {
     ellipse(a[i].xCoord().getPos(), a[i].yCoord().getPos(), a[i].getSize()*2, a[i].getSize()*2);
   }
+  
 } 
 
-class PhysBall {
+static class PhysBall {
   private Coord x, y;
   private float size;
   public PhysBall(Coord xin, Coord yin, float s) {
@@ -49,8 +52,8 @@ class PhysBall {
     size = s;
   }
   public void update() {
-    x.increment(500-size, size);
-    y.increment(500-size, size);
+    x.increment();
+    y.increment();
   }
   public Coord xCoord() {
    return x; 
@@ -68,6 +71,42 @@ class PhysBall {
     x.setSpd(a.one());
     y.setSpd(a.two());
   }
+  public void checkWallCollisions(Line line) {
+    TwoVector wall = new TwoVector(line.getEndx()-line.getStartx(), line.getEndy()-line.getStarty());
+    TwoVector position = new TwoVector(x.getPos()-line.getStartx(), y.getPos()-line.getStarty());
+    TwoVector distance = TwoVector.add(position, TwoVector.scalarMultiple(-1*TwoVector.dot(wall, position) / wall.magnitude() / wall.magnitude(), wall));
+    if(distance.magnitude()<(line.getWidth()+size)) {
+      TwoVector parallel = TwoVector.scalarMultiple(TwoVector.dot(wall, spdDir()) / wall.magnitude() / wall.magnitude(), wall);
+      TwoVector perpendicular = TwoVector.scalarMultiple(0.7, TwoVector.add(spdDir(), TwoVector.scalarMultiple(-1, parallel)));
+      if(perpendicular.magnitude()<0.5) perpendicular = new TwoVector(0,0);
+      setSpdDir(TwoVector.add(parallel, TwoVector.scalarMultiple(-1, perpendicular)));
+      
+      
+      x.setPos(x.getPos() + (size+line.getWidth())*distance.one()/distance.magnitude() - distance.one());
+      y.setPos(y.getPos() + (size+line.getWidth())*distance.two()/distance.magnitude() - distance.two());
+    } 
+  }
+  public static void checkBallCollisions(PhysBall a, PhysBall b) {
+    TwoVector distance = new TwoVector(b.xCoord().getPos()-a.xCoord().getPos(), b.yCoord().getPos()-a.yCoord().getPos());
+    if(distance.magnitude()<b.getSize()*2) {
+      TwoVector inForceDirectionI = TwoVector.scalarMultiple(TwoVector.dot(distance, a.spdDir()) / distance.magnitude()*.99 / distance.magnitude()*0.99, distance);
+      TwoVector perpendicularI = TwoVector.add(a.spdDir(), TwoVector.scalarMultiple(-1*0.99, inForceDirectionI));
+      TwoVector inForceDirectionJ = TwoVector.scalarMultiple(TwoVector.dot(distance, b.spdDir()) / distance.magnitude()*.99 / distance.magnitude()*0.99, distance);
+      TwoVector perpendicularJ = TwoVector.add(b.spdDir(), TwoVector.scalarMultiple(-1*0.99, inForceDirectionJ));
+      if(inForceDirectionJ.magnitude()<0.9) inForceDirectionJ = new TwoVector(0,0);
+      if(inForceDirectionI.magnitude()<0.9) inForceDirectionI = new TwoVector(0,0);
+      a.setSpdDir(TwoVector.add(inForceDirectionJ, perpendicularI));
+      b.setSpdDir(TwoVector.add(inForceDirectionI, perpendicularJ));
+      
+      //Making sure the balls are not intersecting at the end; snaps the balls out. I'd like to make this shorter.
+      TwoVector iChange = TwoVector.scalarMultiple((distance.magnitude()/2 - b.getSize()) / distance.magnitude(), distance);
+      TwoVector jChange = TwoVector.scalarMultiple((b.getSize() - distance.magnitude()/2) / distance.magnitude(), distance);
+      a.xCoord().setPos(a.xCoord().getPos()+iChange.one());
+      a.yCoord().setPos(a.yCoord().getPos()+iChange.two());
+      b.xCoord().setPos(b.xCoord().getPos()+jChange.one());
+      b.yCoord().setPos(b.yCoord().getPos()+jChange.two());
+    }
+  }
 }
 
 
@@ -83,23 +122,7 @@ class Coord {
     spd = s;
     accel = a;
   }
-  public void increment(float big, float small) {
-   
-    if(pos>big) {
-      spd = Math.abs(spd)*1*-1;
-      pos = big;
-      if(spd>-1.0) spd = 0;
-    }
-    
-    if(pos<small) {
-      spd = Math.abs(spd)*1;
-      pos = small;
-      if(spd<1.0) spd = 0;
-      
-    }
-    
-    
-    
+  public void increment() {
     spd += accel;
     pos += spd-accel/2;
   }
@@ -141,5 +164,34 @@ static class TwoVector {
   }
   public static TwoVector scalarMultiple(float s, TwoVector a) {
     return new TwoVector(s*a.one(), s*a.two());
+  }
+}
+
+static class Line {
+  float startx, starty, endx, endy, wit;
+  public Line(float a, float b, float c, float d, float e) {
+    startx = a;
+    starty = b;
+    endx = c;
+    endy = d;
+    wit = e;
+  }
+  public float getStartx() {
+    return startx;
+  }
+  public float getStarty() {
+    return starty; 
+  }
+  public float getEndx() {
+    return endx;
+  }
+  public float getEndy() {
+    return endy;
+  }
+  public float getWidth() {
+    return wit;
+  }
+  public float getAngle() {
+    return (float)Math.tan((endy-starty)/(endx-startx));
   }
 }
